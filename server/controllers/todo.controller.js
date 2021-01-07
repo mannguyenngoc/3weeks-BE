@@ -8,26 +8,41 @@ module.exports.postTodo = (req, res) => {
     isFinished: false,
   });
   newTask.save();
-  res.writeHead(302, {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers":
-      "Origin, X-Requested-With, Content-Type, Accept",
-  });
+  // res.writeHead(201, {
+  //   "Access-Control-Allow-Origin": "*",
+  //   "Access-Control-Allow-Headers":
+  //     "Origin, X-Requested-With, Content-Type, Accept",
+  // }).end((newTask));
+  res.status(201).json(newTask);
 };
 module.exports.getTodo = (req, res) => {
+  console.log("hello friends");
   Todo.find({}, (err, tasks) => {
-    if (err) throw err;
+    if (err) console.log(err);
 
-    res.status(200).send(tasks);
+    res.status(200).send(tasks.length.toString());
+  });
+};
+module.exports.getTodoByPage = (req, res) => {
+  const { page } = req.params;
+
+  let result = [];
+
+  Todo.find({}, (err, tasks) => {
+    if (err) console.log(err);
+    result = tasks.filter((task, index) => {
+      if (index < 1 * page * 10 && index >= (1 * page - 1) * 10) return task;
+    });
+    res.status(200).send(result);
   });
 };
 module.exports.getTodoById = (req, res) => {
-  Todo.findOne({_id: req.params.id}, (err, task) => {
+  Todo.findOne({ _id: req.params.id }, (err, task) => {
     if (err) console.log(err);
 
     res.status(200).send(task);
-  })
-}
+  });
+};
 module.exports.getTodoCompleted = (req, res) => {
   Todo.find({ isFinished: true }, (err, tasks) => {
     if (err) throw err;
@@ -37,16 +52,16 @@ module.exports.getTodoCompleted = (req, res) => {
 };
 module.exports.deleteTodo = (req, res) => {
   const id = req.params.id;
-  console.log(id);
+  console.log("req.params", req.params);
   Todo.find({ _id: id })
     .deleteOne()
     .exec((err, result) => {
-      console.log('hello')
+      console.log("hello");
       if (err) console.log(err);
 
       console.log(result);
-    })
-    res.status(204);
+    });
+  res.status(204);
 };
 module.exports.updateTodo = (req, res) => {
   const id = req.params.id;
@@ -59,6 +74,7 @@ module.exports.updateTodo = (req, res) => {
   if (todo.isFinished != req.body.isFinished) {
     todo.updateOne({ $set: { isFinished: req.body.isFinished } }).exec();
   }
-
-  res.status(200);
+  todo.exec((err, todo) => {
+    res.status(200).json(todo);
+  });
 };

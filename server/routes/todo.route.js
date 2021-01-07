@@ -5,6 +5,7 @@ const controller = require('../controllers/todo.controller');
 
 router.post('/', controller.postTodo);
 router.get('/', controller.getTodo);
+router.get('/page/:page', controller.getTodoByPage);
 router.get('/:id', controller.getTodoById);
 router.get('/completed',  controller.getTodoCompleted);
 router.delete('/:id', controller.deleteTodo);
